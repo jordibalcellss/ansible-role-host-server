@@ -1,0 +1,22 @@
+---
+- name: Provide libvirt
+  yum:
+    name:
+      - qemu-kvm
+      - libvirt
+      - virt-install
+    state: present
+
+- name: Enable libvirtd
+  service:
+    name: libvirtd
+    enabled: yes
+
+- name: Add deploy account in to libvirt group
+  user:
+    name: "{{ account.username }}"
+    groups: libvirt
+    append: yes
+
+- name: Reboot
+  reboot:

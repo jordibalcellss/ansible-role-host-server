@@ -1,0 +1,78 @@
+---
+- name: Provide Yum copr command
+  yum:
+    name: yum-plugin-copr
+    state: present
+
+- name: Enable LXC 3.0 copr sources
+  shell: "yum -y copr enable thm/lxc3.0"
+  become_user: root
+  register: yum_copr
+  args:
+    warn: false
+
+- debug:
+    var: yum_copr.stdout_lines
+
+- name: Provide LXC
+  yum:
+    name:
+      - lxc
+      - lxc-devel
+    state: present
+    
+- name: Install snapd
+  yum:
+    name: snapd
+    state: present
+
+- name: Enable and start snapd
+  service:
+    name: snapd
+    enabled: yes
+    state: started
+
+- name: Provide LXD
+  shell: "snap install lxd"
+  become_user: root
+  register: snap
+  args:
+    warn: false
+ 
+- debug:
+    var: snap.stdout_lines
+
+- name: Add deploy account in to lxd group
+  user:
+    name: "{{ account.deploy.username }}"
+    groups: lxd
+    append: yes
+
+- name: Provide LXD init YAML config file
+  template:
+    src: lxd-config.j2
+    dest: /tmp/lxd-config
+
+- name: Initialize LXD
+  shell: "/var/lib/snapd/snap/bin/lxd init --preseed < /tmp/lxd-config"
+
+- name: Remove LXD temp config file
+  file:
+    path: "/tmp/lxd-config"
+    state: absent
+
+- name: Expose 8443/tcp
+  firewalld:
+    port: 8443/tcp
+    permanent: yes
+    state: enabled
+
+- name: Reload firewalld
+  service:
+    name: firewalld
+    state: reloaded
+
+- name: Install LVM for the storage backend
+  yum:
+    name: lvm2
+    state: present

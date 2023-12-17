@@ -1,0 +1,29 @@
+---
+- name: Provide network bridge support
+  yum:
+    name: bridge-utils
+    state: present
+
+- name: Reconfigure physical adapter
+  template:
+    src: iface-physical.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ net.iface.physical }}
+
+- name: Configure bridge adapter
+  template:
+    src: iface-bridge.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ net.iface.bridge }}
+    owner: root
+    group: root
+
+- name: Restart the network
+  service:
+    name: network
+    state: restarted
+
+- name: Provide EPEL
+  template:
+    src: repo-epel.j2
+    dest: /etc/yum.repos.d/epel.repo
+    owner: root
+    group: root

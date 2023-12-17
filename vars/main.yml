@@ -1,0 +1,19 @@
+---
+net:
+  iface:
+    physical: eth1
+    bridge: br1
+  address: 192.168.168.102
+  prefix: 24
+  gateway: 192.168.168.1
+  dns:
+    1: 192.168.168.101
+    2: 10.12.0.112
+  domain: eixamcoop.cat
+
+account:
+  username: deploy
+
+lxd:
+  https_address: :8443
+  trust_password:

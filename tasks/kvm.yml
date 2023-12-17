@@ -1,0 +1,21 @@
+---
+- name: Check HW capability
+  shell: "cat /proc/cpuinfo | grep -qE 'vmx|svm'"
+  register: cpuinfo
+  failed_when: "cpuinfo.rc not in [0,1]"
+
+- fail:
+    msg: The CPU is not compatible
+  when: cpuinfo.rc
+
+- import_tasks: CentOS-7.yml
+  when:
+    - ansible_facts.distribution == 'CentOS'
+    - ansible_facts.distribution_major_version == '7'
+
+- import_tasks: AlmaLinux-9.yml
+  when:
+    - ansible_facts.distribution == 'AlmaLinux'
+    - ansible_facts.distribution_major_version == '9'
+
+- import_tasks: kvm-common.yml

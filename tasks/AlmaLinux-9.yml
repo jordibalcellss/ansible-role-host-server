@@ -1,0 +1,25 @@
+---
+- name: Add bridge adapter
+  community.general.nmcli:
+    conn_name: "{{ net.iface.bridge }}"
+    type: bridge
+    ip4: "{{ net.address }}/{{ net.prefix }}"
+    gw4: "{{ net.gateway }}"
+    dns4:
+    - "{{ net.dns.1 }}"
+    - "{{ net.dns.2 }}"
+    dns4_search: "{{ net.domain }}"
+    state: present
+
+- name: Remove physical adapter
+  community.general.nmcli:
+    conn_name: "{{ net.iface.physical }}"
+    state: absent
+
+- name: Readd physical adapter as slave
+  community.general.nmcli:
+    conn_name: "{{ net.iface.physical }}"
+    type: ethernet
+    slave_type: bridge
+    master: "{{ net.iface.bridge }}"
+    state: present
